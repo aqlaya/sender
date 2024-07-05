@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "message.hpp"
+#include "peer_socket.hpp"
 
 int main() {
 
@@ -13,6 +14,16 @@ int main() {
 
 
     std::cout << mess.get_ptr_to_data() << std::endl;
+
+
+
+    Udp_Socket udp_connect;
+
+
+    for (;;) 
+    {
+    }
+
 
     return 0;
 }

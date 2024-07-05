@@ -26,6 +26,10 @@ struct sockaddr_in;
 
 
 class Udp_Socket {
+
+
+    static const inline unsigned short open_port = 62564;
+
     private:
 
 
