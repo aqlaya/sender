@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sys/wait.h>
 
 #include "message.hpp"
 #include "peer_socket.hpp"
@@ -20,9 +21,6 @@ int main() {
     Udp_Socket udp_connect;
 
 
-    for (;;) 
-    {
-    }
 
 
     return 0;

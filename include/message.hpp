@@ -15,7 +15,9 @@ class Message {
         const char* _ptr_data = nullptr;
 
     public:
-        Message(std::string&& inf); 
+        Message(std::string&& inf);
+
+        ~Message() = default;;
 
         Message(const Message& obj) = delete;
         Message& operator=(const Message& obj) = delete;
@@ -32,10 +34,13 @@ class Message {
 
 };
 
+
 std::string Message::get_name() 
 {
     return _data.substr(0, _data.find(':'));
 }
+
+
 
 std::string Message::get_ipv4() 
 {
@@ -48,6 +53,7 @@ Message::Message(std::string&& inf): _data(std::move(inf))
     _ptr_name_and_ipv4 = _data.c_str();
     _ptr_data          = _data.c_str() + _data.find('\n') + 1;
 }
+
 
 auto  Message::get_ptr_to_data() -> const char *
 {
