@@ -20,6 +20,13 @@ class threadsafe_queue
 
         threadsafe_queue& operator=(const threadsafe_queue&) = delete;
 
+
+        void push(T& new_value) {
+            std::lock_guard<std::mutex> lk(mut);
+            data_queue.push(new_value);
+            data_cond.notify_one();
+        }
+
         void push(T&& new_value)
         {
 
@@ -33,7 +40,7 @@ class threadsafe_queue
             std::lock_guard<std::mutex> lk(mut);
             if (!data_queue.empty())
             {
-                value = data_queue.back();
+                value = std::move(data_queue.front());
                 data_queue.pop();
                 return true;
             }
@@ -45,7 +52,7 @@ class threadsafe_queue
 
             std::lock_guard<std::mutex> lk(mut);
             if (!data_queue.empty()) {
-                std::shared_ptr<T> ptr_value = std::make_shared<T>(std::move(data_queue.back()));
+                std::shared_ptr<T> ptr_value = std::make_shared<T>(std::move(data_queue.front()));
                 data_queue.pop();
                 return ptr_value;
             }
@@ -55,8 +62,8 @@ class threadsafe_queue
         void wait_and_pop(T& value)
         {
             std::unique_lock<std::mutex> lk(mut);
-            data_cond.wait(lk, [this](){ return data_queue.empty();});
-            value = data_queue.back();
+            data_cond.wait(lk, [this](){ return !data_queue.empty();});
+            value = std::move(data_queue.front());
             data_queue.pop();
         }
 
@@ -64,8 +71,10 @@ class threadsafe_queue
         {
             std::unique_lock<std::mutex> lk(mut);
             data_cond.wait(lk, [this](){ return data_queue.empty(); });
-            std::shared_ptr<T> ptr_value = std::make_shared(data_queue.back());
+            std::shared_ptr<T> ptr_value = std::make_shared<T>(std::move(data_queue.front()));
             data_queue.pop();
+
+            return ptr_value;
         }
 
 

@@ -1,29 +1,32 @@
 #include "peer_socket.hpp"
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <exception>
 
-#include <arpa/inet.h>
+extern threadsafe_queue<Message> qu;
 
-void Udp_Socket::recieve_message() 
-{   
-    for (size_t i = 0; i < 1000; ++i ) {
-        std::cout << i << std::endl;
-    }
-}
 
-void Udp_Socket::add_receiver(std::string&& name, std::string&& ipv4) 
-{
-    std::thread new_thread(&Udp_Socket::recieve_message, this);
-    for (size_t i = 0; i < 100; ++i)
-    {
-        std::cout << i << std::endl;
-    }
-    new_thread.detach();
-}
+
+//void Udp_Socket::recieve_message(threadsafe_queue<Message>& queue)
+//{
+//    
+//    for (;;) {
+//
+//        char* raw_message = new char[max_length];
+//
+//       
+//        if (  recvfrom(_fd, raw_message, max_length, 0, NULL, NULL) != 255) 
+//        {
+//            throw std::logic_error("Receive error");
+//        }
+//
+//        Message mess(std::string(raw_message, max_length));
+//        queue.push(std::move(mess));
+//    }
+//}
+
 
 Udp_Socket::Udp_Socket() 
 {
+
+    char* raw_message = new char[max_length];
     sockaddr_in my_host;
 
     in_addr addr_any;
@@ -37,9 +40,35 @@ Udp_Socket::Udp_Socket()
     // create IPv4 socket
     _fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (  bind(_fd, reinterpret_cast<sockaddr*>(&my_host), sizeof(struct sockaddr_in6))  == -1) 
+    if (_fd == -1)
+    {
+        throw std::logic_error("Socket error function");
+    }
+
+    if (  bind(_fd, reinterpret_cast<sockaddr*>(&my_host), sizeof(struct sockaddr_in))  == -1) 
     {
         throw std::logic_error("Not bind to socket");
-    }   
+    } 
+
+//    std::thread reciever_thread(&Udp_Socket::recieve_message, this, std::ref(qu)); 
+//    std::thread reciever_thread(&Udp_Socket::recieve_message, this);
+
+//    reciever_thread.detach();
+    for (;  ;) {
+       
+        if (  recvfrom(_fd, raw_message, max_length, 0, NULL, NULL) != 255) 
+        {
+            throw std::logic_error("Receive error");
+        }
+
+        for (int i = 0; raw_message[i] != EOF; ++i)
+        {
+            std::cout << raw_message[i] << std::endl; 
+        }
+    }
+    
 }
+
+
+
 
